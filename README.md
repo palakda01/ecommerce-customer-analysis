@@ -1,106 +1,44 @@
-\# E-commerce Customer and Sales Analysis
+# E-commerce Customer and Sales Analysis
 
+Analysis of an online retailer's transactions (UK, Dec 2010 to Dec 2011) to understand sales trends and identify valuable and at-risk customers.
 
+**Tools:** Python (pandas, matplotlib, seaborn), MySQL, Power BI
 
-\## Goal
+## Project Flow
+Raw data -> Python cleaning -> MySQL -> SQL analysis -> RFM segmentation -> Power BI dashboard
 
-Analyze an online retailer's sales data to understand revenue trends, top products and countries, and identify valuable and at-risk customers.
+## Folder Structure
+- `notebooks/` - cleaning, loading to MySQL, RFM segmentation
+- `sql/` - table definition, analysis queries and views
+- `reports/` - charts, report and presentation
+- `dashboard/` - Power BI file
 
+## Dataset
+UCI Online Retail dataset. The raw file is not included; download it from the UCI Machine Learning Repository and place it in `data/raw/`. The data ends around 9 December 2011, so December 2011 is a partial month.
 
+## Data Cleaning
+541,909 raw rows reduced to 522,504 after removing duplicates (5,268), cancelled orders (9,251), zero or negative quantity/price rows (2,512) and non-product codes such as postage and bank charges (2,374). Rows without a customer ID (131,354) were kept for sales analysis and excluded from customer analysis.
 
-\## Business Questions
+## Key Findings
+- Revenue of about £10.25M from 19,773 orders and 4,334 identified customers.
+- Revenue peaks in November 2011 (£1.45M) after rising from September.
+- 65% of customers are repeat buyers and generate about 93% of customer revenue.
+- The top 25% of customers generate 79% of customer revenue.
 
-1\. How do monthly sales and orders trend?
-
-2\. Which products and countries generate the most revenue?
-
-3\. Who are the top customers?
-
-4\. What share of customers are repeat buyers?
-
-5\. Which customers are at risk of leaving?
-
-6\. What actions should the business take?
-
-
-
-\## Tools
-
-Python, PostgreSQL, Power BI
-
-
-
-step	rows\_remaining
-
-0	Raw data	541909
-
-1	Removed duplicates	536641
-
-2	Removed cancelled orders	527390
-
-3	Removed quantity/price <= 0	524878
-
-4	Removed non-product codes	522504
-
-5	Final cleaned data	522504
-
-
-
-\## Dataset
-
-UCI Online Retail dataset (transactions from a UK-based online retailer, December 2010 to December 2011). The raw file is not included in this repository. Download it from the UCI Machine Learning Repository and place it in `data/raw/`.
-
-
-
-Note: the data ends around 9 December 2011, so December 2011 is a partial month. The goal of this project is to demonstrate an end-to-end analytics workflow, and findings reflect that period rather than current market behaviour.
-
-
-
-\## Data Cleaning Summary
-
-
-
-Raw data:541909 rows and 8 columns. Cleaned data: XXXX rows.
-
-
-
-| Issue found | How it was handled | Rows affected |
-
+## Customer Segments (RFM)
+| Segment | % of customers | % of revenue |
 |---|---|---|
+| Champions | 18% | 61% |
+| Loyal Customers | 19% | 16% |
+| At Risk | 9% | 7% |
+| Lost | 31% | 8% |
+| Others | 23% | 8% |
 
-| Duplicate rows | Removed exact duplicates | 5268 |
+Champions drive most revenue, so retention matters most. At Risk customers spend like Loyal customers but have been inactive for about 136 days, making them the best win-back target.
 
-| Cancelled orders (invoice starts with "C") | Separated into their own file and removed from sales data |  9251 |
+## Limitations
+- Only 12 months of data, so "Lost" means inactive within this window.
+- About 15% of revenue has no customer ID and cannot be segmented.
 
-| Quantity or unit price of 0 or less | Removed (stock adjustments, free or damaged items) | 2512 |
-
-| Non-product stock codes (POST, DOT, M, BANK CHARGES, etc.) | Removed, since they are fees and adjustments, not products | XXXX |
-
-| Missing CustomerID (about 25% of rows) | Kept for sales analysis, excluded later from customer-level (RFM) analysis | 131354 |
-
-| Missing descriptions | Removed along with zero-price rows | XXXX |
-
-| Inconsistent column names and data types | Renamed to snake\_case and fixed types | n/a |
-
-| Large quantities (outliers) | Kept, as they appear to be genuine wholesale orders | n/a |
-
-
-
-\### Feature engineering
-
-\- `total\_price` = quantity x unit\_price
-
-\- Date features: order\_date, year, month, order\_month, day\_name, hour
-
-
-
-\## Project Structure
-
-\- `notebooks/` - Python notebooks (data cleaning, analysis)
-
-\- `sql/` - SQL queries
-
-\- `dashboard/` - Power BI file
-
-\- `reports/` - report and presentation
-
+## Dashboard and Report
+Coming soon.
