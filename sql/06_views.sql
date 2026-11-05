@@ -1,39 +1,40 @@
 USE retail_analysis;
 
--- 1
-WITH country_rev AS (
-    SELECT country, ROUND(SUM(total_price), 2) AS revenue
-    FROM retail_sales GROUP BY country
-),
-ranked AS (
-    SELECT country, revenue, RANK() OVER (ORDER BY revenue DESC) AS rnk FROM country_rev
-)
-SELECT * FROM ranked WHERE rnk <= 5;
+CREATE OR REPLACE VIEW v_monthly_sales AS
+SELECT order_month,
+       ROUND(SUM(total_price), 2)  AS revenue,
+       COUNT(DISTINCT invoice_no)  AS orders,
+       COUNT(DISTINCT customer_id) AS customers,
+       ROUND(SUM(total_price) / COUNT(DISTINCT invoice_no), 2) AS avg_order_value
+FROM retail_sales
+GROUP BY order_month;
 
--- 2
-WITH monthly AS (
-    SELECT order_month, SUM(total_price) AS revenue FROM retail_sales GROUP BY order_month
-),
-changes AS (
-    SELECT order_month,
-           revenue - LAG(revenue) OVER (ORDER BY order_month) AS change_in_revenue
-    FROM monthly
-)
-SELECT order_month, ROUND(change_in_revenue, 2) AS change_in_revenue
-FROM changes
-ORDER BY change_in_revenue DESC
-LIMIT 1;
 
--- 3
-WITH uk_customers AS (
-    SELECT customer_id, ROUND(SUM(total_price), 2) AS total_spent
-    FROM retail_sales
-    WHERE country = 'United Kingdom' AND customer_id IS NOT NULL
-    GROUP BY customer_id
-),
-ranked AS (
-    SELECT customer_id, total_spent,
-           ROW_NUMBER() OVER (ORDER BY total_spent DESC) AS rn
-    FROM uk_customers
-)
-SELECT * FROM ranked WHERE rn <= 3;
+CREATE OR REPLACE VIEW v_country_sales AS
+SELECT country,
+       ROUND(SUM(total_price), 2)  AS revenue,
+       COUNT(DISTINCT invoice_no)  AS orders,
+       COUNT(DISTINCT customer_id) AS customers
+FROM retail_sales
+GROUP BY country;
+
+CREATE OR REPLACE VIEW v_product_sales AS
+SELECT stock_code,
+       MAX(description)            AS product,
+       SUM(quantity)               AS units_sold,
+       ROUND(SUM(total_price), 2)  AS revenue,
+       COUNT(DISTINCT invoice_no)  AS orders
+FROM retail_sales
+GROUP BY stock_code;
+
+CREATE OR REPLACE VIEW v_customer_summary AS
+SELECT customer_id,
+       MAX(country)                AS country,
+       COUNT(DISTINCT invoice_no)  AS orders,
+       ROUND(SUM(total_price), 2)  AS total_spent,
+       MIN(order_date)             AS first_order,
+       MAX(order_date)             AS last_order,
+       ROUND(SUM(total_price) / COUNT(DISTINCT invoice_no), 2) AS avg_order_value
+FROM retail_sales
+WHERE customer_id IS NOT NULL
+GROUP BY customer_id;
